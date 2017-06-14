@@ -1,0 +1,27 @@
+#!/bin/bash
+
+PROTO_SRC='./**.proto'
+
+CPP_OUT=./gen/cpp
+PYTHON_OUT=./gen/python
+GO_OUT=./gen/go
+
+mkdir -p $CPP_OUT
+mkdir -p $PYTHON_OUT
+mkdir -p $GO_OUT
+
+# Build all protobufs and Go grpc
+
+protoc -I. --cpp_out=$CPP_OUT --python_out=$PYTHON_OUT \
+    --go_out=plugins=grpc:$GO_OUT $PROTO_SRC
+
+# Build C++ grpc
+
+protoc -I. --grpc_out=$CPP_OUT \
+    --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` \
+    $PROTO_SRC
+
+# Build Python grpc
+
+python -m grpc_tools.protoc -I. --python_out=$PYTHON_OUT \
+    --grpc_python_out=$PYTHON_OUT $PROTO_SRC
